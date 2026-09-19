@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, doc, onSnapshot, writeBatch, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase'; 
 import { Trash2, AlertCircle, Check, Users, Grid, Lock, Clock, ShieldCheck, User, Upload, Image as ImageIcon } from 'lucide-react';
+import fundoImg from './assets/fundo.jpg'; // <--- IMPORTA A IMAGEM DO SEU PC AQUI!
 
 export default function App() {
   // --- CREDENCIAIS DE ADMINISTRADOR ---
@@ -198,13 +199,12 @@ export default function App() {
   return (
     <div 
       className="min-h-screen p-4 md:p-8 font-sans bg-cover bg-center bg-fixed relative"
-      // --- COLOQUE O LINK DA SUA IMAGEM DE FUNDO AQUI DENTRO DOS PARÊNTESES ---
-      style={{ backgroundImage: `url('https://unsplash.com/pt-br/fotografias/um-fundo-de-coracoes-de-pirulito-em-um-fundo-cor-de-rosa--v6ovF9LDIU')` }}
+      // --- AQUI É ONDE A SUA IMAGEM É APLICADA ---
+      style={{ backgroundImage: `url(${fundoImg})` }}
     >
-      {/* Película escura para dar destaque aos painéis brancos da rifa */}
+      {/* Película escura: Se achar que a sua imagem ficou muito escura, apague a linha abaixo! */}
       <div className="absolute inset-0 bg-black/40 fixed"></div>
 
-      {/* Conteúdo do site (o z-10 garante que fique por cima da imagem e da película) */}
       <div className="max-w-6xl mx-auto space-y-6 relative z-10">
         
         {/* CABEÇALHO */}
@@ -257,7 +257,6 @@ export default function App() {
                     <input type="text" required value={selectedInput} onChange={(e) => setSelectedInput(e.target.value)} disabled={isUploading} className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: 42, 15" />
                   </div>
                   
-                  {/* UPLOAD DE COMPROVANTE IMGBB */}
                   <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors bg-white">
                     <input 
                       type="file" 
@@ -285,7 +284,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* GRADE */}
             <div className="lg:col-span-3 bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/20 overflow-hidden">
               <div className="flex items-center gap-4 mb-4 text-xs font-medium text-gray-700 justify-center sm:justify-start">
                 <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-white border border-gray-300 shadow-sm"></span> Livre</div>
