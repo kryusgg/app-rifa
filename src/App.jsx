@@ -9,7 +9,7 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState(false);
   
-  const SENHA_CORRETA = "sthe123"; // <--- MUDE SUA SENHA AQUI
+  const SENHA_CORRETA = "123456"; // <--- MUDE SUA SENHA AQUI
 
   // --- ESTADOS DA RIFA ---
   const [activeTab, setActiveTab] = useState('grid');
@@ -21,7 +21,7 @@ export default function App() {
 
   const TOTAL_NUMBERS = 1000;
 
-  // Carregar dados do Firestore em tempo real (Só carrega se estiver autenticado)
+  // Carregar dados do Firestore em tempo real
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -48,6 +48,11 @@ export default function App() {
     }
   };
 
+  // Cálculos da Rifa (Vendidos, Restantes, Porcentagem)
+  const soldCount = Object.keys(tickets).length;
+  const availableCount = TOTAL_NUMBERS - soldCount;
+  const progressPercent = (soldCount / TOTAL_NUMBERS) * 100;
+
   // Processa o input de texto para extrair números válidos
   const selectedNumbers = useMemo(() => {
     return selectedInput
@@ -68,7 +73,7 @@ export default function App() {
     return groups;
   }, [tickets]);
 
-  // Verifica se há sobreposição sempre que a seleção ou os tickets mudam
+  // Verifica se há sobreposição
   useEffect(() => {
     const conflicts = selectedNumbers.filter(num => tickets[num]);
     if (conflicts.length > 0) {
@@ -79,7 +84,7 @@ export default function App() {
   }, [selectedNumbers, tickets]);
 
   const handleNumberClick = (num) => {
-    if (tickets[num]) return; // Ignora se já estiver vendido
+    if (tickets[num]) return; 
 
     let currentSelected = [...selectedNumbers];
     if (currentSelected.includes(num)) {
@@ -182,30 +187,53 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Cabeçalho */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Gerenciador de Rifa</h1>
-            <p className="text-gray-500">{Object.keys(tickets).length} de {TOTAL_NUMBERS} números vendidos</p>
+        {/* Cabeçalho Melhorado com Contadores */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex-1 w-full">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Gerenciador de Rifa</h1>
+            
+            {/* Caixinhas de Contagem */}
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex flex-col items-center bg-blue-50 border border-blue-100 px-4 py-2 rounded-xl min-w-[100px]">
+                <span className="text-blue-500 text-xs font-bold uppercase tracking-wider mb-1">Vendidos</span>
+                <span className="text-blue-700 text-2xl font-black">{soldCount}</span>
+              </div>
+              <div className="flex flex-col items-center bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-xl min-w-[100px]">
+                <span className="text-emerald-500 text-xs font-bold uppercase tracking-wider mb-1">Restantes</span>
+                <span className="text-emerald-700 text-2xl font-black">{availableCount}</span>
+              </div>
+            </div>
+
+            {/* Barra de Progresso */}
+            <div className="w-full max-w-md bg-gray-100 rounded-full h-3 overflow-hidden border border-gray-200">
+              <div 
+                className="bg-blue-500 h-full rounded-full transition-all duration-1000 ease-out relative" 
+                style={{ width: `${progressPercent}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 mt-2 font-medium">{progressPercent.toFixed(1)}% concluído</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 items-center">
-            <div className="flex bg-gray-100 p-1 rounded-lg">
+
+          <div className="flex flex-col sm:flex-row gap-4 items-center w-full md:w-auto">
+            <div className="flex bg-gray-100 p-1 rounded-lg w-full sm:w-auto justify-center">
               <button
                 onClick={() => setActiveTab('grid')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'grid' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'grid' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 <Grid size={18} /> Painel
               </button>
               <button
                 onClick={() => setActiveTab('list')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'list' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'list' ? 'bg-white shadow-sm text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 <Users size={18} /> Vendidos
               </button>
             </div>
             <button 
               onClick={() => setIsAuthenticated(false)}
-              className="text-sm text-red-500 hover:text-red-700 font-medium"
+              className="text-sm text-red-500 hover:text-red-700 font-medium whitespace-nowrap"
             >
               Sair
             </button>
