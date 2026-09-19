@@ -4,11 +4,11 @@ import { db } from './firebase';
 import { Trash2, AlertCircle, Check, Users, Lock, Clock, ShieldCheck, User, Upload, Image as ImageIcon, ChevronRight, X, Copy, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
-  // --- CREDENCIAIS DE ADMINISTRADOR ---
+// --- CREDENCIAIS DE ADMINISTRADOR ---
   const ADMIN_USER = import.meta.env.VITE_ADMIN_USER;
   const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS;
 
-  // --- CONFIGURAÇÕES DA RIFA ---
+// --- CONFIGURAÇÕES DA RIFA ---
   const TOTAL_NUMBERS = 1000;
   const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_KEY;
   const BG_IMAGE = "https://ibb.co/Vp9DZ9Qh"; // <--- LINK DA IMAGEM DE FUNDO
@@ -50,7 +50,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleLogin = (e) => {
+const handleLogin = (e) => {
     e.preventDefault();
     if (loginUser === ADMIN_USER && loginPass === ADMIN_PASS) {
       setIsAuthenticated(true);
@@ -59,6 +59,9 @@ export default function App() {
       setLoginPass('');
     } else {
       setLoginError(true);
+      // Adicione esta linha para descobrirmos o erro:
+      console.log("SISTEMA ESPERAVA Usuário:", ADMIN_USER, "| DIGITADO:", loginUser);
+      console.log("SISTEMA ESPERAVA Senha:", ADMIN_PASS, "| DIGITADO:", loginPass);
     }
   };
 
