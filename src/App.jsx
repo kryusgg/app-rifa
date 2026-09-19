@@ -5,12 +5,12 @@ import { Trash2, AlertCircle, Check, Users, Lock, Clock, ShieldCheck, User, Uplo
 
 export default function App() {
   // --- CREDENCIAIS DE ADMINISTRADOR ---
-  const ADMIN_USER = "doce metade";
-  const ADMIN_PASS = "sthe123@";
+  const ADMIN_USER = import.meta.env.VITE_ADMIN_USER;
+  const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS;
 
   // --- CONFIGURAÇÕES DA RIFA ---
   const TOTAL_NUMBERS = 1000;
-  const IMGBB_API_KEY = "9481e5acecaabb8232eb2420285f7b2b"; // <--- CHAVE IMGBB
+  const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_KEY;
   const BG_IMAGE = "https://ibb.co/Vp9DZ9Qh"; // <--- LINK DA IMAGEM DE FUNDO
   
   // ---> DADOS DE PAGAMENTO <---
