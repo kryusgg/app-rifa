@@ -14,7 +14,7 @@ export default function App() {
   const TOTAL_NUMBERS = 1000;
   const CHAVE_PIX = "078.250.614.38"; // <--- ATENÇÃO: COLOQUE A SUA CHAVE PIX AQUI
   const NOME_PIX = "Stephany Camilla Castelar"; // <--- O SEU NOME NO PIX
-  const PRECO_NUMERO = 5.00; // <--- PREÇO DA RIFA
+  const PRECO_NUMERO = 2.00; // <--- PREÇO DA RIFA
 
   // --- ESTADOS DO SISTEMA ---
   const [activeTab, setActiveTab] = useState('grid'); 
