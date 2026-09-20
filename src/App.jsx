@@ -2,21 +2,19 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, doc, onSnapshot, writeBatch, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase'; 
 import { Trash2, AlertCircle, Check, Users, Lock, Clock, ShieldCheck, User, Upload, Image as ImageIcon, ChevronRight, X, Copy, CheckCircle2 } from 'lucide-react';
+import fundoImg from './assets/fundo.jpg'; // A sua imagem de fundo local
 
 export default function App() {
-// --- CREDENCIAIS DE ADMINISTRADOR ---
+  // --- CREDENCIAIS DE ADMINISTRADOR (Vêm do ficheiro .env) ---
   const ADMIN_USER = import.meta.env.VITE_ADMIN_USER;
   const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS;
-
-// --- CONFIGURAÇÕES DA RIFA ---
-  const TOTAL_NUMBERS = 1000;
   const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_KEY;
-  const BG_IMAGE = "https://ibb.co/Vp9DZ9Qh"; // <--- LINK DA IMAGEM DE FUNDO
-  
-  // ---> DADOS DE PAGAMENTO <---
-  const CHAVE_PIX = "078.250.614.38"; // <--- COLOQUE SUA CHAVE PIX AQUI
-  const NOME_PIX = "Stephany Camilla Castelar"; // <--- SEU NOME NO PIX
-  const PRECO_NUMERO = 2.00; // <--- PREÇO DE CADA NÚMERO (Ex: 5 reais)
+
+  // ---> DADOS DE PAGAMENTO E RIFA <---
+  const TOTAL_NUMBERS = 1000;
+  const CHAVE_PIX = "078.250.614.38"; // <--- ATENÇÃO: COLOQUE A SUA CHAVE PIX AQUI
+  const NOME_PIX = "Stephany Camilla Castelar"; // <--- O SEU NOME NO PIX
+  const PRECO_NUMERO = 5.00; // <--- PREÇO DA RIFA
 
   // --- ESTADOS DO SISTEMA ---
   const [activeTab, setActiveTab] = useState('grid'); 
@@ -32,7 +30,7 @@ export default function App() {
   // --- ESTADOS DO FLUXO DE COMPRA (MODAL) ---
   const [selectedNumbers, setSelectedNumbers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [checkoutStep, setCheckoutStep] = useState(1); // 1: Nome, 2: Pix e Comprovante, 3: Sucesso
+  const [checkoutStep, setCheckoutStep] = useState(1); 
   const [customerName, setCustomerName] = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -50,7 +48,7 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-const handleLogin = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     if (loginUser === ADMIN_USER && loginPass === ADMIN_PASS) {
       setIsAuthenticated(true);
@@ -59,9 +57,6 @@ const handleLogin = (e) => {
       setLoginPass('');
     } else {
       setLoginError(true);
-      // Adicione esta linha para descobrirmos o erro:
-      console.log("SISTEMA ESPERAVA Usuário:", ADMIN_USER, "| DIGITADO:", loginUser);
-      console.log("SISTEMA ESPERAVA Senha:", ADMIN_PASS, "| DIGITADO:", loginPass);
     }
   };
 
@@ -93,10 +88,8 @@ const handleLogin = (e) => {
     return { pendingGroups: pGroups, approvedGroups: aGroups };
   }, [tickets]);
 
-  // Função para selecionar números na grade principal
   const handleNumberClick = (num) => {
-    if (tickets[num]) return; // Bloqueia clicar em vendidos/pendentes
-    
+    if (tickets[num]) return; 
     setSelectedNumbers(prev => {
       if (prev.includes(num)) return prev.filter(n => n !== num);
       return [...prev, num].sort((a, b) => a - b);
@@ -107,10 +100,15 @@ const handleLogin = (e) => {
     if (e.target.files[0]) setReceiptFile(e.target.files[0]);
   };
 
+  // CORREÇÃO APLICADA: Limpa os dados apenas ao fechar o modal na tela de sucesso
   const closeCheckout = () => {
     setIsModalOpen(false);
+    if (checkoutStep === 3) {
+      setSelectedNumbers([]);
+      setCustomerName('');
+      setReceiptFile(null);
+    }
     setCheckoutStep(1);
-    // Não apagamos customerName nem receiptFile aqui para ele não perder os dados se fechar sem querer
   };
 
   const startCheckout = () => {
@@ -120,7 +118,6 @@ const handleLogin = (e) => {
   const finalizeReservation = async () => {
     if (!customerName.trim() || selectedNumbers.length === 0) return;
 
-    // Dupla checagem para evitar sobreposição na hora H
     const conflicts = selectedNumbers.filter(num => tickets[num]);
     if (conflicts.length > 0) {
       alert(`Desculpe, os números ${conflicts.join(', ')} acabaram de ser reservados por outra pessoa. Por favor, escolha outros.`);
@@ -157,11 +154,8 @@ const handleLogin = (e) => {
 
       await batch.commit();
       
-      // Sucesso! Vai para a etapa 3 (Sucesso)
+      // CORREÇÃO APLICADA: Avança para a etapa de sucesso sem apagar os dados da memória!
       setCheckoutStep(3);
-      setSelectedNumbers([]);
-      setCustomerName('');
-      setReceiptFile(null);
       
     } catch (error) {
       console.error("Erro ao solicitar:", error);
@@ -202,7 +196,7 @@ const handleLogin = (e) => {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500 font-sans">Carregando dados...</div>;
 
   return (
-    <div className="min-h-screen font-sans bg-cover bg-center bg-fixed relative pb-24" style={{ backgroundImage: `url('${BG_IMAGE}')` }}>
+    <div className="min-h-screen font-sans bg-cover bg-center bg-fixed relative pb-24" style={{ backgroundImage: `url(${fundoImg})` }}>
       <div className="absolute inset-0 bg-black/50 fixed"></div>
 
       <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 relative z-10 p-4 md:p-8">
@@ -213,7 +207,6 @@ const handleLogin = (e) => {
             <div className="text-center md:text-left w-full">
               <h1 className="text-xl md:text-2xl font-bold text-gray-800 mb-3">Sorteio Online</h1>
               
-              {/* Contadores menores para celular */}
               <div className="flex justify-center md:justify-start gap-2 mb-3">
                 <div className="bg-red-50 border border-red-100 px-2 py-1 rounded-lg text-center flex-1 md:flex-none md:min-w-[80px]">
                   <span className="block text-red-500 text-[9px] font-bold uppercase tracking-wider">Vendidos</span>
@@ -246,7 +239,7 @@ const handleLogin = (e) => {
           </div>
         </div>
 
-        {/* ABA COMPRAR NÚMEROS (Apenas a Grade) */}
+        {/* ABA COMPRAR NÚMEROS */}
         {activeTab === 'grid' && (
           <div className="bg-white/95 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-white/20">
             <div className="text-center mb-4">
@@ -260,7 +253,6 @@ const handleLogin = (e) => {
               <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-100 border border-red-300"></span> Vendido</div>
             </div>
 
-            {/* Grelha mais compacta para mobile */}
             <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-1.5 md:gap-2 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar pb-20">
               {Array.from({ length: TOTAL_NUMBERS }, (_, i) => i + 1).map((num) => {
                 const data = tickets[num];
@@ -283,10 +275,9 @@ const handleLogin = (e) => {
           </div>
         )}
 
-        {/* ABA ADMIN (Mantida igual ao anterior, focada no gestor) */}
+        {/* ABA ADMIN */}
         {activeTab === 'admin' && (
           <div className="bg-white/95 backdrop-blur-sm p-4 md:p-6 rounded-2xl shadow-lg border border-white/20">
-            {/* ... Todo o código do admin que enviei na resposta anterior permanece inalterado aqui ... */}
              {!isAuthenticated ? (
               <div className="max-w-sm mx-auto py-12">
                 <div className="flex justify-center mb-6"><div className="bg-gray-100 p-4 rounded-full text-gray-600 shadow-inner"><Lock size={32} /></div></div>
@@ -372,7 +363,7 @@ const handleLogin = (e) => {
 
       </div>
 
-      {/* --- BARRA FLUTUANTE INFERIOR (Mobile e Desktop) --- */}
+      {/* BARRA FLUTUANTE INFERIOR */}
       {activeTab === 'grid' && selectedNumbers.length > 0 && !isModalOpen && (
         <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-4 z-40 animate-slideUp">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -387,12 +378,11 @@ const handleLogin = (e) => {
         </div>
       )}
 
-      {/* --- MODAL DE CHECKOUT (Jornada por Etapas) --- */}
+      {/* MODAL DE CHECKOUT */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-fadeIn">
           <div className="bg-white w-full max-w-md sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slideUpBottom">
             
-            {/* Header do Modal */}
             <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50/50">
               <h3 className="font-bold text-gray-800 text-lg">Finalizar Reserva</h3>
               {checkoutStep !== 3 && (
@@ -400,10 +390,8 @@ const handleLogin = (e) => {
               )}
             </div>
 
-            {/* Conteúdo Dinâmico por Etapa */}
             <div className="p-6 overflow-y-auto">
               
-              {/* ETAPA 1: Identificação */}
               {checkoutStep === 1 && (
                 <div className="space-y-5 animate-fadeIn">
                   <div className="bg-blue-50 text-blue-800 p-3 rounded-xl border border-blue-100 text-sm">
@@ -431,18 +419,14 @@ const handleLogin = (e) => {
                 </div>
               )}
 
-              {/* ETAPA 2: Pagamento e Comprovante */}
               {checkoutStep === 2 && (
                 <div className="space-y-5 animate-fadeIn">
-                  
-                  {/* Resumo do Valor */}
                   <div className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-center">
                     <p className="text-sm text-gray-500 font-medium mb-1">Total a pagar</p>
                     <p className="text-3xl font-black text-green-600">R$ {(selectedNumbers.length * PRECO_NUMERO).toFixed(2).replace('.', ',')}</p>
                     <p className="text-xs text-gray-400 mt-1">({selectedNumbers.length}x R$ {PRECO_NUMERO.toFixed(2).replace('.', ',')})</p>
                   </div>
 
-                  {/* Instruções Pix */}
                   <div className="border border-green-200 rounded-xl p-4 bg-green-50/50">
                     <p className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-2">
                       1. Pague via Pix
@@ -459,7 +443,6 @@ const handleLogin = (e) => {
                     </div>
                   </div>
 
-                  {/* Anexo */}
                   <div className="border border-blue-200 rounded-xl p-4 bg-blue-50/30">
                     <p className="text-sm font-bold text-gray-800 mb-2">2. Envie o Comprovante (Opcional)</p>
                     <input type="file" id="receipt-upload" accept="image/*" onChange={handleFileChange} className="hidden" disabled={isUploading}/>
@@ -483,7 +466,6 @@ const handleLogin = (e) => {
                 </div>
               )}
 
-              {/* ETAPA 3: Sucesso */}
               {checkoutStep === 3 && (
                 <div className="text-center py-6 animate-fadeIn">
                   <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -505,7 +487,6 @@ const handleLogin = (e) => {
         </div>
       )}
 
-      {/* Adicionar animações no CSS global (Tailwind purista via classes utilitárias) */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes slideUpBottom { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
